@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<!-- 사용자 CSS 추가 -->
+
+<th:block layout:fragment="css">
+    <style>
+        .carousel-inner > .item {
+            height : 350px;
+        }
+        .margin{
+            margin-bottom : 30px;
+        }
+        .banner{
+            height : 300px;
+            position : absolute; top:0; left:0;
+            width: 100%;
+        }
+        .card-text{
+            text-overflow : ellipsis;
+            white-space : nowrap;
+            overflow : hidden;
+        }
+        a:hover{
+            text-decoration:none;
+        }
+        .center{
+            text-align:center;
+        }
+    </style>
+</th:block>
+
+<div layout:fragment="content">
+
+    <div id="carouselControls" class="carousel slide margin" data-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active item">
+                <img src="https://user-images.githubusercontent.com/13268420/112147492-1ab76200-8c20-11eb-8649-3d2f282c3c02.png" class="d-block w-100 banner" alt="First slide">
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" name="searchQuery" th:value="${itemSearchDto.searchQuery}">
+    <div th:if="${not #strings.isEmpty(itemSearchDto.searchQuery)}" class="center">
+        <p class="h3 font-weight-bold" th:text="${itemSearchDto.searchQuery} + '검색결과'"></p>
+    </div>
+
+    <form action="/" method="get">
+        <!-- 검색어 유지 -->
+        <input type="hidden" name="searchQuery" th:value="${itemSearchDto.searchQuery}">
+
+
+        <!--<label for="maxPrice">상품선택</label>
+        <select name="maxPrice" id="maxPrice" onchange="this.form.submit()">
+            <option value="" th:selected="${itemSearchDto.maxPrice == null}">전체보기</option>
+            <option value="5000" th:selected="${itemSearchDto.maxPrice == '5000'}">5000원 이하</option>
+            <option value="10000" th:selected="${itemSearchDto.maxPrice == '10000'}">10000원 이하</option>
+        </select>-->
+
+        <label>가격 조회:</label>
+
+        <!-- 1. 전체보기 -->
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="maxPrice" id="price_all" value=""
+                   th:checked="${itemSearchDto.maxPrice == null && itemSearchDto.minPrice == null}"
+                   onchange="selectRadioPrice('')">
+            <label class="form-check-label" for="price_all">전체보기</label>
+        </div>
+
+        <!-- 2. 5000원 이하 -->
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="maxPrice" id="upto_5000" value="5000"
+                   th:checked="${itemSearchDto.maxPrice == 5000 && itemSearchDto.minPrice == null}"
+                   onchange="selectRadioPrice('5000')">
+            <label class="form-check-label" for="upto_5000">5000원 이하</label>
+        </div>
+
+        <!-- 3. 10000원 이하 -->
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="maxPrice" id="upto_10000" value="10000"
+                   th:checked="${itemSearchDto.maxPrice == 10000 && itemSearchDto.minPrice == null}"
+                   onchange="selectRadioPrice('10000')">
+            <label class="form-check-label" for="upto_10000">10000원 이하</label>
+        </div>
+
+        <!-- 4. 직접 범위 선택 -->
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="priceOption" id="select_price" value="custom"
+                   th:checked="${itemSearchDto.minPrice != null || (itemSearchDto.maxPrice != null && itemSearchDto.maxPrice != 5000 && itemSearchDto.maxPrice != 10000)}"
+                   onclick="openRange()">
+            <label class="form-check-label" for="select_price">범위 선택하기</label>
+        </div>
+
+        <!-- 5. 최소 / 최대 가격 입력창 (처음엔 숨김 처리 가능) -->
+        <div id="customPriceRange" class="form-check form-check-inline" style="display: none;">
+            <input type="number" name="minPrice" id="min_price" class="form-control"
+                   placeholder="최소 가격" th:value="${itemSearchDto.minPrice}">
+            <input type="number" name="maxPrice" id="max_price" class="form-control"
+                   placeholder="최대 가격" th:value="${itemSearchDto.maxPrice}"
+                   onkeydown="if(event.key === 'Enter') { this.form.submit(); }">
+        </div>
+
+        <hr>
+
+        <!-- 정렬 선택 라디오 버튼 -->
+        <label>가격 정렬:</label>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="sortPrice" id="priceAsc" value="asc"
+                   th:checked="${itemSearchDto.sortPrice == null or itemSearchDto.sortPrice == 'asc'}"
+                   onchange="this.form.submit()">
+            <label class="form-check-label" for="priceAsc">낮은 가격순</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="sortPrice" id="priceDesc" value="desc"
+                   th:checked="${itemSearchDto.sortPrice == 'desc'}"
+                   onchange="this.form.submit()">
+            <label class="form-check-label" for="priceDesc">높은 가격순</label>
+        </div>
+
+        <hr>
+
+        <!-- 신상품만 보기 체크박스 옵션 -->
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="isNew" id="isNew" value="true"
+                   th:checked="${itemSearchDto.isNew}"
+                   onchange="this.form.submit()">
+            <label class="form-check-label font-weight-bold text-danger" for="isNew">✨ 신상품만 보기</label>
+        </div>
+        <hr>
+
+    </form>
+
+    <div class="container text-center">
+        <div class="row row-cols-5">
+            <th:block th:each="item, status: ${items.getContent()}">
+                <div class="col mb-4">
+                    <div class="card h-100">
+                        <a th:href="'/item/' + ${item.id}" class="text-dark text-decoration-none">
+                            <img th:src="${item.imgUrl}" class="card-img-top" th:alt="${item.itemNm}"
+                                 height="400">
+                            <div class="card-body">
+                                <h4 class="card-title">
+                                    [[${item.itemNm}]]
+
+                                    <span th:if="${item.isNew}" style="background-color: #dc3545; color: white; padding: 3px 7px; border-radius: 4px; font-size: 12px; margin-left: 5px;">N</span>
+                                </h4>
+
+                                <p class="card-text">[[${item.itemDetail}]]</p>
+                                <h3 class="card-title text-danger">[[${item.price}]]원</h3>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </div>
+
+    <!-- 페이징 영역 -->
+    <div th:with="start=${(items.number/maxPage)*maxPage +1},
+        end=(${(items.totalPages == 0) ? 1 : (start + (maxPage-1) < items.totalPages ?
+        start + (maxPage - 1) : items.totalPages)})">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${items.number eq 0}?'disabled'">
+                <a th:href="@{'/'(searchQuery=${itemSearchDto.searchQuery}, maxPrice=${itemSearchDto.maxPrice}, sortPrice=${itemSearchDto.sortPrice}, isNew=${itemSearchDto.isNew}, page=${items.number-1})}"
+                   aria-label='Previous' class="page-link">
+                    <span aria-hidden="true">Previous</span>
+                </a>
+            </li>
+            <li class="page-item" th:each="page: ${#numbers.sequence(start,end)}"
+                th:classappend="${items.number eq page-1}?'active':''">
+                <a th:href="@{'/'(searchQuery=${itemSearchDto.searchQuery}, maxPrice=${itemSearchDto.maxPrice}, sortPrice=${itemSearchDto.sortPrice}, isNew=${itemSearchDto.isNew}, page=${page-1})}"
+                   th:inline="text" class="page-link">[[${page}]]</a>
+            </li>
+            <li class="page-item" th:classappend="${items.number+1 ge items.totalPages}?'disabled'">
+                <a th:href="@{'/'(searchQuery=${itemSearchDto.searchQuery}, maxPrice=${itemSearchDto.maxPrice}, sortPrice=${itemSearchDto.sortPrice}, isNew=${itemSearchDto.isNew}, page=${items.number+1})}"
+                   aria-label="Next" class="page-link">
+                    <span aria-hidden="true">Next</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+</html>
