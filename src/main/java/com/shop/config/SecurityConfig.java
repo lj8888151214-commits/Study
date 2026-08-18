@@ -50,7 +50,9 @@ public class SecurityConfig {
     // 암호 -> 암호화 기능
     @Bean
     public static PasswordEncoder passwordEncoder(){
+        int i;
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+
     }
 
     @Autowired
