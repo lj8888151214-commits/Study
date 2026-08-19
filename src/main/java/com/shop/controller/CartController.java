@@ -41,6 +41,9 @@ public class CartController {
             String yh;
             yh = "rich";
 
+            String yj;
+            yj = "rich, too";
+
             return new ResponseEntity<String>(sb.toString(), HttpStatus.BAD_REQUEST);
         }
         String email = principal.getName();
