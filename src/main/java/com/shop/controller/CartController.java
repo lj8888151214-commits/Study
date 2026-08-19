@@ -35,6 +35,7 @@ public class CartController {
                 sb.append(fieldError.getDefaultMessage());
             }
             int a;
+            a = 3;
             return new ResponseEntity<String>(sb.toString(), HttpStatus.BAD_REQUEST);
         }
         String email = principal.getName();
